@@ -15,38 +15,37 @@ export const register = async (req, res) => {
     if (!firstName || !lastName || !email || !password)
       return res.status(400).json({ message: "All fields are required" });
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser)
+    const existing = await User.findOne({ email });
+    if (existing)
       return res.status(409).json({ message: "User already exists" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = await User.create({
+    const user = await User.create({
       firstName,
       lastName,
       email,
       password: hashedPassword,
     });
 
-    const token = jwt.sign({ id: newUser._id }, process.env.SECRET_KEY, {
+    const token = jwt.sign({ id: user._id }, process.env.SECRET_KEY, {
       expiresIn: "10m",
     });
 
-    newUser.token = token;
-    await newUser.save();
-
     await sendVerificationEmail(email, token);
+
+    user.token = token;
+    await user.save();
 
     res.status(201).json({
       success: true,
       message: "Registered successfully. Please verify your email.",
     });
   } catch (error) {
-    console.error("Register error:", error);
+    console.error("Register error:", error.message);
     res.status(500).json({ message: "Internal server error" });
   }
 };
-
 // =======================
 // VERIFY EMAIL
 // =======================
