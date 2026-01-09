@@ -13,7 +13,7 @@
 
     app.use(
       cors({
-        origin: "http://localhost:5173",
+        origin: process.env.VITE_API_URL, // Use the environment variable
         credentials: true,
       })
     );
