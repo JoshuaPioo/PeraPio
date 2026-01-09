@@ -9,7 +9,7 @@ connectDB();
 
 const app = express();
 
-// Update CORS to allow multiple origins or the required one
+// Allow multiple origins
 const allowedOrigins = [
   "http://localhost:5173", // Local development
   "https://pera-pio.vercel.app", // Production URL
@@ -17,7 +17,14 @@ const allowedOrigins = [
 
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or postman)
+      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
